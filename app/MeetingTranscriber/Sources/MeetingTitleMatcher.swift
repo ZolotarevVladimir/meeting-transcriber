@@ -15,12 +15,17 @@ private let logger = Logger(subsystem: AppPaths.logSubsystem, category: "Meeting
 struct MeetingTitleMatcher {
     let appName: String
     let ownerNames: [String]
+    /// When true, only a title matching a meeting pattern is returned (no
+    /// first-non-idle fallback). Browser meetings set this: their window title
+    /// is whatever tab is active.
+    let requiresMeetingMatch: Bool
     private let idleRegexes: [NSRegularExpression]
     private let meetingRegexes: [NSRegularExpression]
 
-    init(pattern: AppMeetingPattern) {
+    init(pattern: AppMeetingPattern, requiresMeetingMatch: Bool = false) {
         appName = pattern.appName
         ownerNames = pattern.ownerNames
+        self.requiresMeetingMatch = requiresMeetingMatch
         idleRegexes = Self.compile(pattern.idlePatterns, kind: "idle", appName: pattern.appName)
         meetingRegexes = Self.compile(pattern.meetingPatterns, kind: "meeting", appName: pattern.appName)
     }
@@ -67,7 +72,7 @@ struct MeetingTitleMatcher {
             if isMeetingTitle(title) { return title }
             if firstNonIdle == nil { firstNonIdle = title }
         }
-        return firstNonIdle
+        return requiresMeetingMatch ? nil : firstNonIdle
     }
 
     private static func anyMatch(_ regexes: [NSRegularExpression], _ title: String) -> Bool {

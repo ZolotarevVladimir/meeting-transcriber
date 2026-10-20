@@ -208,9 +208,32 @@ final class PowerAssertionDetectorIdentityTests: XCTestCase {
         detector.windowListProvider = {
             [
                 ["kCGWindowOwnerName": "Microsoft Edge", "kCGWindowName": "Private Banking"],
-                ["kCGWindowOwnerName": "Brave Browser", "kCGWindowName": "Weekly Sync"],
+                ["kCGWindowOwnerName": "Brave Browser", "kCGWindowName": "Weekly Sync | Jitsi Meet"],
             ]
         }
-        XCTAssertEqual(detector.checkOnce()?.windowTitle, "Weekly Sync")
+        XCTAssertEqual(detector.checkOnce()?.windowTitle, "Weekly Sync | Jitsi Meet")
+    }
+
+    func testABrowserTabThatIsNotAMeetingNeverNamesTheCall() {
+        // A browser window's title is its active tab: a video playing in front
+        // of the call tab used to name the recording and the notification.
+        let detector = PowerAssertionFixture.browserDetector()
+        detector.assertionProvider = { PowerAssertionFixture.assertions((7, "Brave Browser", PowerAssertionFixture.webRTC)) }
+        detector.windowListProvider = {
+            [["kCGWindowOwnerName": "Brave Browser", "kCGWindowName": "Some video - YouTube"]]
+        }
+        XCTAssertEqual(detector.checkOnce()?.windowTitle, PowerAssertionDetector.placeholderTitle(appName: "Brave Browser"))
+    }
+
+    func testAMeetingTabWinsOverAnotherWindowOfTheSameBrowser() {
+        let detector = PowerAssertionFixture.browserDetector()
+        detector.assertionProvider = { PowerAssertionFixture.assertions((7, "Brave Browser", PowerAssertionFixture.webRTC)) }
+        detector.windowListProvider = {
+            [
+                ["kCGWindowOwnerName": "Brave Browser", "kCGWindowName": "Some video - YouTube"],
+                ["kCGWindowOwnerName": "Brave Browser", "kCGWindowName": "Видеовстреча — Яндекс Телемост"],
+            ]
+        }
+        XCTAssertEqual(detector.checkOnce()?.windowTitle, "Видеовстреча — Яндекс Телемост")
     }
 }
