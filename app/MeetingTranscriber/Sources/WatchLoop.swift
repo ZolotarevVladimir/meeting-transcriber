@@ -85,6 +85,11 @@ class WatchLoop {
     let autoRecordCalendarMeetings: () -> Bool
     /// Names a recording after the calendar event it falls into; see `WatchLoop+CalendarTitle.swift`.
     let calendarLookup: any CalendarMeetingLookup
+    /// Dynamic accessor — title patterns of calendar events during which
+    /// nothing records automatically; see `WatchLoop+CalendarIgnore.swift`.
+    let ignoredCalendarTitles: () -> [String]
+    /// The ignored event last logged, so a skip is logged once per event.
+    var lastIgnoredCalendarEvent: InRoomMeetingPolicy.Key?
 
     /// The app whose consent prompt is currently parked, nil when no question
     /// is open. The answer is awaited in `consentTask` rather than inline, so
@@ -138,6 +143,7 @@ class WatchLoop {
         denyListStore: any ConsentDenyListStoring = InMemoryConsentDenyListStore(),
         autoRecordCalendarMeetings: @escaping () -> Bool = { false },
         calendarLookup: any CalendarMeetingLookup = NoCalendarLookup(),
+        ignoredCalendarTitles: @escaping () -> [String] = { [] },
     ) {
         self.detector = detector
         self.recorderFactory = recorderFactory
@@ -158,6 +164,7 @@ class WatchLoop {
         self.denyListStore = denyListStore
         self.autoRecordCalendarMeetings = autoRecordCalendarMeetings
         self.calendarLookup = calendarLookup
+        self.ignoredCalendarTitles = ignoredCalendarTitles
     }
 
     nonisolated static var defaultOutputDir: URL {
@@ -322,6 +329,12 @@ class WatchLoop {
             if let approved = takeApprovedConsentMeeting(), detector.isMeetingActive(approved) {
                 if await runMeeting(approved) { return }
             } else if let meeting = detector.checkOnce() {
+                // An ignored calendar slot neither records nor asks; see
+                // WatchLoop+CalendarIgnore.swift.
+                if isInIgnoredCalendarEvent() {
+                    try? await sleepProvider(pollInterval)
+                    continue
+                }
                 // Browser meetings (issue #503) ask before recording; native
                 // meetings skip this (flag false). See WatchLoop+Consent.swift.
                 // Asking does NOT block this loop — that is the whole point:

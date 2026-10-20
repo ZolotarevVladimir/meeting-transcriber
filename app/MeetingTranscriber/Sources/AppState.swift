@@ -127,6 +127,7 @@ final class AppState {
         InRoomMeetingPrompter(
             lookup: EventKitMeetingLookup { [settings] in settings.calendarTitlesEnabled },
             isEnabled: { [settings] in settings.promptInRoomMeetings },
+            ignoredTitles: { [settings] in settings.ignoredCalendarTitles },
             notifier: notifier,
             hooks: InRoomMeetingPrompter.Hooks(
                 mayPrompt: { [settings, watching] in

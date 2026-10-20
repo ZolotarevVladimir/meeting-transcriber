@@ -21,6 +21,7 @@ enum A11yID {
     static let recordOnlyToggle = "recordOnlyToggle"
     static let watchBrowserToggle = "watchBrowserToggle"
     static let calendarTitlesToggle = "calendarTitlesToggle"
+    static let ignoredCalendarTitlesField = "ignoredCalendarTitlesField"
     static let autoRecordCalendarMeetingsToggle = "autoRecordCalendarMeetingsToggle"
     static let promptInRoomMeetingsToggle = "promptInRoomMeetingsToggle"
     static let browserConsentWarning = "browserConsentWarning"
