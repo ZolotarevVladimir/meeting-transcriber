@@ -398,15 +398,24 @@ class PowerAssertionDetector: MeetingDetecting {
     /// the one process that asserted, so only that browser's own windows can
     /// supply the title. A shared owner list would let any fork in the family
     /// contribute, which is how an unrelated tab title reached the protocol
-    /// filename and the model prompt. Building it costs nothing: the
-    /// synthesised pattern carries no regexes to compile.
+    /// filename and the model prompt. A browser window's title is its active
+    /// tab, so a per-process hit only takes a title that names a web meeting
+    /// service (`AppMeetingPattern.webMeetingTitlePatterns`): a video playing
+    /// in the front tab must not name the call.
     private func lookupWindowTitle(
         for meetingPattern: AppMeetingPattern,
         pattern: AssertionPattern,
     ) -> String? {
         let matcher = switch pattern.identity {
         case .shared: matchers[pattern.appName]
-        case .perProcess: MeetingTitleMatcher(pattern: meetingPattern)
+        case .perProcess: MeetingTitleMatcher(
+                pattern: AppMeetingPattern(
+                    appName: meetingPattern.appName,
+                    ownerNames: meetingPattern.ownerNames,
+                    meetingPatterns: AppMeetingPattern.webMeetingTitlePatterns,
+                ),
+                requiresMeetingMatch: true,
+            )
         }
         return matcher?.selectWindowTitle(from: windowListProvider())
     }

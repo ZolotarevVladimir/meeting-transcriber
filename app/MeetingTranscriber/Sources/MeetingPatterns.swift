@@ -119,6 +119,23 @@ extension AppMeetingPattern {
         requiresRecordingConsent: true,
     )
 
+    /// Window titles that name a web meeting service. A browser window's title
+    /// is only its active tab, so for a browser meeting any other title (a
+    /// video, a document) says nothing about the call and must not name the
+    /// recording; see `PowerAssertionDetector.lookupWindowTitle`.
+    static let webMeetingTitlePatterns = [
+        "(?i)телемост|telemost",
+        "(?i)google meet|^meet [-–]",
+        "(?i)zoom",
+        "(?i)jitsi",
+        "(?i)microsoft teams",
+        "(?i)whereby",
+        "(?i)webex",
+        "(?i)salutejazz|sberjazz",
+        "(?i)контур\\.?толк|ktalk",
+        "(?i)vk звонки|звонок vk|calls\\.vk",
+    ]
+
     // Call apps detected by mic input rather than assertions or window titles
     // (see `MicInputDetector`): their in-call assertions are unnamed or absent
     // and their call-window titles are localized/unstable, so `meetingPatterns`
