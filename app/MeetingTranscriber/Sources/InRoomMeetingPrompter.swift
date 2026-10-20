@@ -28,6 +28,8 @@ final class InRoomMeetingPrompter {
 
     private let lookup: any CalendarMeetingLookup
     private let isEnabled: () -> Bool
+    /// Title patterns of events never asked about; see `CalendarIgnoreList`.
+    private let ignoredTitles: () -> [String]
     private let notifier: any AppNotifying
     private let hooks: Hooks
     private let nowProvider: () -> Date
@@ -45,6 +47,7 @@ final class InRoomMeetingPrompter {
     init(
         lookup: any CalendarMeetingLookup,
         isEnabled: @escaping () -> Bool,
+        ignoredTitles: @escaping () -> [String] = { [] },
         notifier: any AppNotifying,
         hooks: Hooks,
         nowProvider: @escaping () -> Date = Date.init,
@@ -55,6 +58,7 @@ final class InRoomMeetingPrompter {
     ) {
         self.lookup = lookup
         self.isEnabled = isEnabled
+        self.ignoredTitles = ignoredTitles
         self.notifier = notifier
         self.hooks = hooks
         self.nowProvider = nowProvider
@@ -83,7 +87,9 @@ final class InRoomMeetingPrompter {
     func tick() async {
         guard isEnabled(), hooks.mayPrompt() else { return }
         let now = nowProvider()
-        guard let event = InRoomMeetingPolicy.candidate(now: now, among: lookup.events(around: now), history: history) else {
+        let patterns = ignoredTitles()
+        let events = lookup.events(around: now).filter { !CalendarIgnoreList.matches($0.title, patterns: patterns) }
+        guard let event = InRoomMeetingPolicy.candidate(now: now, among: events, history: history) else {
             return
         }
         await ask(about: event)

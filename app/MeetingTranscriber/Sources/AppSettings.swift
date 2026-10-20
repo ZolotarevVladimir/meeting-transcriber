@@ -199,6 +199,17 @@ final class AppSettings {
         didSet { defaults.set(promptInRoomMeetings, forKey: "promptInRoomMeetings") }
     }
 
+    /// Calendar events during which nothing records automatically, one title
+    /// pattern per line (see `CalendarIgnoreList`). Same dependency on
+    /// `calendarTitlesEnabled` as the two settings above. Empty by default.
+    var ignoredCalendarTitlesText: String {
+        didSet { defaults.set(ignoredCalendarTitlesText, forKey: "ignoredCalendarTitlesText") }
+    }
+
+    var ignoredCalendarTitles: [String] {
+        CalendarIgnoreList.patterns(from: ignoredCalendarTitlesText)
+    }
+
     // MARK: - Recording
 
     var pollInterval: Double {
@@ -604,6 +615,7 @@ final class AppSettings {
         calendarTitlesEnabled = defaults.object(forKey: "calendarTitlesEnabled") as? Bool ?? false
         autoRecordCalendarMeetings = defaults.object(forKey: "autoRecordCalendarMeetings") as? Bool ?? false
         promptInRoomMeetings = defaults.object(forKey: "promptInRoomMeetings") as? Bool ?? false
+        ignoredCalendarTitlesText = defaults.string(forKey: "ignoredCalendarTitlesText") ?? ""
 
         pollInterval = defaults.object(forKey: "pollInterval") as? Double ?? 3.0
         endGrace = defaults.object(forKey: "endGrace") as? Double ?? 15.0

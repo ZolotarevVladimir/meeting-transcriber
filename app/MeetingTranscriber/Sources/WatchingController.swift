@@ -257,6 +257,7 @@ final class WatchingController {
                     denyListStore: ConsentDenyListStore(settings: settings),
                     autoRecordCalendarMeetings: { [settings] in settings.autoRecordCalendarMeetings },
                     calendarLookup: EventKitMeetingLookup { [settings] in settings.calendarTitlesEnabled },
+                    ignoredCalendarTitles: { [settings] in settings.ignoredCalendarTitles },
                 )
 
                 attachStateChangeHandler(to: loop, notifyOnRecording: true)

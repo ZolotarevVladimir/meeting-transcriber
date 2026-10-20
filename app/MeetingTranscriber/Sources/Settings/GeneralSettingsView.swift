@@ -148,6 +148,19 @@ struct GeneralSettingsView: View {
         )
         .font(.caption)
         .foregroundStyle(.secondary)
+        TextField("Never record during events titled", text: $settings.ignoredCalendarTitlesText, axis: .vertical)
+            .lineLimit(1 ... 5)
+            .accessibilityIdentifier(A11yID.ignoredCalendarTitlesField)
+            .disabled(!settings.calendarTitlesEnabled)
+        Text(
+            """
+            One title per line, matched anywhere in the event title, ignoring case. While such an \
+            event is running, detected meetings are not recorded and nothing is asked. Manual \
+            recordings still work.
+            """,
+        )
+        .font(.caption)
+        .foregroundStyle(.secondary)
     }
 
     /// Apps the user answered "Never for this app" about.
